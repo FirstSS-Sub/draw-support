@@ -148,7 +148,8 @@ def result():
     article = request.form["article"]
     name = request.form["name"]
     thread = request.form["thread"]
-    if request.files["pic"] is not None:
+    # if request.files["pic"] is not None:
+    if False:
         img = request.files["pic"]
         app.logger.info(type(img))
         img_name = "{}.jpg".format(date)
