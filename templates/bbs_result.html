@@ -1,0 +1,27 @@
+{% extends "layout.html" %} {% block content %}
+<div class="caption text-center">
+  <div class="container">
+    <header>
+      <div class="row">
+        <h1>draw support</h1>
+      </div>
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %}
+      <ul class=flashes>
+        {% for category, message in messages %}
+        <div class="{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </ul>
+      {% endif %} {% endwith %}
+    </header>
+  </div>
+  <h3>調整中</h3>
+  <h1>書き込みました</h1>
+  <br>
+  <p>{{ now }} {{ name }} {{ article }}</p>
+  <img src="../static/images/{{ img_name }}" title="{{ img_name }}">
+
+  <form action="/" method="get">
+    <button type="submit">戻る</button>
+  </form>
+</div>
+{% endblock %}
