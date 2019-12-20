@@ -24,15 +24,15 @@
         <p></p>
         <label for="name">名前</label>
         <input type="text" name="name"> -->
-    <button type="submit">作る</button>
+    <button type="submit" class="btn btn-primary">作る</button>
   </form>
 
   <h2>スレッド一覧</h2>
   {% for thread in threads: %}
   <form action="/thread" method="post">
     <input type="hidden" name="thread" value="{{ thread.threadname }}">
-    <button type="submit">{{ thread.threadname }}</button>
+    <button type="submit" class="btn btn-outline-success btn-lg">{{ thread.threadname }}</button>
   </form>
-  {% endfor %}
+  <br> {% endfor %}
 </div>
 {% endblock %}

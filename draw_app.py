@@ -16,9 +16,20 @@ import numpy as np
 import cv2
 from datetime import *
 
+# ファイル名をチェックする関数
+from werkzeug.utils import secure_filename
+
 app = Flask(__name__)
 
 app.secret_key = "draw2019"
+
+# 画像のアップロード先のディレクトリ
+UPLOAD_FOLDER = './static/images/'
+
+# アップロードされる拡張子の制限
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'gif'])
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL') or 'sqlite:///draw.db'  # or "postgresql://localhost/k-on"
@@ -80,14 +91,16 @@ class Article(db.Model):
     #name = db.Column(db.Text(80))
     article = db.Column(db.Text())
     img_name = db.Column(db.String(100))
+    img_path = db.Column(db.String(200))
     thread_id = db.Column(db.Integer, db.ForeignKey(
         'thread.id'), nullable=False)
 
-    def __init__(self, pub_date, name, article, img_name, thread_id):
+    def __init__(self, pub_date, name, article, img_name, img_path, thread_id):
         self.pub_date = pub_date
         self.name = name
         self.article = article
         self.img_name = img_name
+        self.img_path = img_path
         self.thread_id = thread_id
 
 
@@ -107,7 +120,7 @@ db.create_all()
 
 
 @app.route("/")
-def main():
+def index():
     threads = Thread.query.all()
     # print("\n---------------------------------------------")
     # print(text)
@@ -148,16 +161,36 @@ def result():
     article = request.form["article"]
     name = request.form["name"]
     thread = request.form["thread"]
-    # if request.files["pic"] is not None:
-    if False:
-        img = request.files["pic"]
-        app.logger.info(type(img))
-        img_name = "{}.jpg".format(date)
-        img_path = "./static/images/{}".format(img_name)
-        with open(img_path, "wb") as f:
-            f.write(img)
-        #cv2.imwrite(img_path, img)
+    app.logger.info(request.files)
+    if request.files["pic"].filename is not "":
+        # データの取り出し
+        file = request.files["pic"]
+
+        # 危険な文字を削除（サニタイズ処理）
+        temp_name = secure_filename(file.filename)
+
+        # 日時.拡張子 例:2019-12-13_14:13:41.jpg
+        img_name = date.strftime("%Y-%m-%d_%H:%M") + \
+            '.' + temp_name.rsplit('.', 1)[1].lower()
+
+        # .があるかどうかのチェックと、拡張子の確認
+        # OKなら１、だめなら0
+        if '.' in img_name and img_name.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS:
+            # if False:
+            app.logger.info(type(file))
+            # img_name = "{}.jpg".format(date)
+            # img_path = "./static/images/{}".format(img_name)
+
+            # ファイルの保存
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], img_name))
+        else:
+            app.logger.info("AAAAAAAAAAAAAAAAAAA")
+            app.logger.info(img_name)
+            flash('拡張子は png, jpg, gif のみ対応しています',
+                  category='alert alert-danger')
+            return redirect(url_for('index'))
     else:
+        app.logger.info("BBBBBBBBBBBBBBBB")
         img_name = ""
     # print(article)
     # print(name)
@@ -167,10 +200,18 @@ def result():
     thread = Thread.query.filter_by(threadname=thread).first()
     # print(thread)
     # print("------------------------------------------------------------")
+
+    # 1つ上の階層を参照するために最初にドット
+    img_path = '.' + UPLOAD_FOLDER + img_name
+
     admin = Article(pub_date=date, name=name,
-                    article=article, thread_id=thread.id, img_name=img_name)
+                    article=article, thread_id=thread.id, img_name=img_name, img_path=img_path)
     db.session.add(admin)
     db.session.commit()
+
+    app.logger.info(img_path)
+    app.logger.info(img_name)
+
     return render_template("bbs_result.html", article=article, name=name, now=date, img_name=img_name)
 
 

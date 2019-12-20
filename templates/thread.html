@@ -30,14 +30,16 @@
     <button type="submit">送信する</button>
   </form>
 
+  <br>
+
   <h2>投稿一覧 {{ thread }}</h2>
 
   <table class="table">
     <thead class="thead-dark">
       <tr>
-        <th>日付</th>
-        <th>名前</th>
-        <th>投稿</th>
+        <th width="40">日付</th>
+        <th width="40">名前</th>
+        <th width="400">投稿</th>
       </tr>
     </thead>
     <tbody>
@@ -45,14 +47,21 @@
       <tr>
         <th scope="row">{{ f.pub_date }}</th>
         <td>{{ f.name }}</td>
-        <td>{{ f.article }}</td>
+        {% if f.img_name == "" %}
+        <td>
+          <font size="3">{{ f.article }}</font>
+        </td>
+        {% else %}
+        <td>
+          <font size="3">{{ f.article }}</font><br><img src={{ f.img_path }} alt={{ f.img_name }}></td>
+        {% endif %}
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
   <form action="/" method="get">
-    <button type="submit">戻る</button>
+    <button type="submit" class="btn btn-outline-success btn-lg">戻る</button>
   </form>
 </div>
 {% endblock %}
